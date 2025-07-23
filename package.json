@@ -1,0 +1,19 @@
+{
+  "name": "ItemSimulator",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "yukgeunmu <36117247+yukgeunmu@users.noreply.github.com>",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "@prisma/client": "^6.12.0",
+    "cookie-parser": "^1.4.7",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "prisma": "^6.12.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10",
+    "prettier": "^3.6.2"
+  }
+}
