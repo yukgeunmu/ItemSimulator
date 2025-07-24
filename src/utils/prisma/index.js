@@ -7,3 +7,8 @@ export const prisma = new PrismaClient({
   // 에러 메시지를 평문이 아닌, 개발자가 읽기 쉬운 형태로 출력해줍니다.
   errorFormat: 'pretty',
 }); // PrismaClient 인스턴스를 생성합니다.
+
+export const IsValidInput =  (str) =>{
+  const regex = /^[a-z0-9]+$/;
+  return regex.test(str);
+};
