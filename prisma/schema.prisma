@@ -13,3 +13,87 @@ datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
+
+model Items{
+  itemId      Int  @id  @default(autoincrement()) @map("itemId")
+  inventoryId Int? @map("inventoryId")
+  itemName    String   @map("name")
+  itemStat    Json? @map("itemStat")
+  itemPrice   Int @map("itemPrice")
+  quantity    Int @default(1) @map("quantity")
+  createdAt   DateTime  @default(now()) @map("createdAt")
+  updatedAt   DateTime @updatedAt @map("updatedAt")
+
+  inventory Inventory? @relation(fields: [inventoryId], references: [inventoryId], onDelete: SetNull)
+  equippedItems EquippedItem[] 
+
+  @@map("Items")
+
+}
+
+
+model Account{
+  accountId   Int @id @default(autoincrement()) @map("accountId")
+  email       String @unique @map("email")
+  password    String @map("password")
+  createdAt   DateTime  @default(now()) @map("createdAt")
+  updatedAt   DateTime @updatedAt @map("updatedAt")
+
+  character Character[]
+
+  @@map("Account")
+}
+
+model Character{
+  characterId Int   @id @default(autoincrement()) @map("characterId")
+  accountId   Int    @map("accountId")
+  name   String   @unique @map("name")
+  health Int      @map("health")
+  power  Int      @map("power")
+  money  Int      @map("money")
+  profileImage  String  @map("profileImage")
+  createdAt     DateTime  @default(now()) @map("createdAt")
+  updatedAt     DateTime @updatedAt @map("updatedAt")
+
+  account Account @relation(fields: [accountId], references: [accountId], onDelete: Cascade)
+  inventory Inventory?
+
+  equippedItem EquippedItem[]
+
+  @@map("Character")
+
+}
+
+model Inventory{
+  inventoryId Int @id @default(autoincrement()) @map("inventoryId")
+  characterId Int @unique @map("characterId")
+
+  character Character @relation(fields: [characterId], references: [characterId],onDelete: Cascade)
+
+  item Items[]
+
+  @@map("Inventory")
+
+}
+
+model EquippedItem{
+  equippedItemId Int  @id @default(autoincrement()) @map("equippedItemId")
+  characterId    Int @map("characterId")
+  itemId         Int @map("itemId")
+  slot           EquippedSlot @map("slot")
+
+  character Character @relation(fields: [characterId], references: [characterId], onDelete: Cascade)
+  item      Items     @relation(fields: [itemId], references: [itemId], onDelete: Cascade)
+
+}
+
+enum EquippedSlot {
+  HEAD
+  BODY
+  WEAPON
+  SHIELD
+  RING
+  NECKLACE
+}
+
+
