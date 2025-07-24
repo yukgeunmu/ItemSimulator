@@ -7,13 +7,6 @@ import { Prisma } from '@prisma/client';
 
 const router = express.Router();
 
-// - 아이디, 비밀번호, 비밀번호 확인, 이름을 데이터로 넘겨서 회원가입을 요청합니다.
-//     - 보안을 위해 비밀번호는 평문(Plain Text)으로 저장하지 않고 해싱된 값을 저장합니다.
-// - 아래 사항에 대한 **유효성 체크**를 해야 되며 유효하지 않은 경우 알맞은 HTTP 상태코드와 에러 메세지를 반환해야 합니다.
-//     - **아이디**: 다른 사용자와 중복될 수 없으며 오로지 **영어 소문자 + 숫자 조합**으로 구성이 되어야 합니다.
-//     - **비밀번호:** 최소 6자 이상이며, 비밀번호 확인과 일치해야 합니다.
-// - 회원가입 성공 시, 비밀번호를 제외 한 사용자의 정보를 반환합니다.
-
 router.post('/sign-up', async (req, res, next) => {
   try {
     const { userId, password, passwordCheck, name } = req.body;
@@ -82,10 +75,45 @@ router.post('/sign-in', async (req, res, next) => {
     'custom-secret-key',
   );
 
-  res.cookie("authorization", `Bearer ${token}`);
+  res.cookie('authorization', `Bearer ${token}`);
 
-   return res.status(200).json({ message: "로그인 성공" });
+  return res.status(200).json({ message: '로그인 성공' });
+});
 
+//   characterId Int   @id @default(autoincrement()) @map("characterId")
+//   accountId   Int    @map("accountId")
+//   charactername   String   @unique @map("charactername")
+//   health Int      @map("health")
+//   power  Int      @map("power")
+//   money  Int      @map("money")
+//   profileImage  String  @map("profileImage")
+
+router.post('/character', authMiddlewate, async (req, res, next) => {
+  const { charactername } = req.body;
+  const account = req.user;
+
+  const characters = await prisma.character.findFirst({
+    where: { charactername },
+  });
+
+  if (characters) return res.status(404).json({ message: '존재하는 캐릭터 닉네임 입니다.' });
+
+  await prisma.character.create({
+    data: {
+      charactername,
+      health: 500,
+      power: 100,
+      money: 10000,
+      profileImage: '',
+      account: {
+        connect: {
+          accountId: account.accountId,
+        },
+      },
+    },
+  });
+
+  return res.status(201).json({ message: '캐릭터가 생성되었습니다.' });
 });
 
 export default router;

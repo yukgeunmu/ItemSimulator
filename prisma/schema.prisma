@@ -52,7 +52,7 @@ model Character{
   health Int      @map("health")
   power  Int      @map("power")
   money  Int      @map("money")
-  profileImage  String  @map("profileImage")
+  profileImage  String?  @map("profileImage")
   createdAt     DateTime  @default(now()) @map("createdAt")
   updatedAt     DateTime @updatedAt @map("updatedAt")
 
