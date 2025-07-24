@@ -7,6 +7,7 @@ import { Prisma } from '@prisma/client';
 
 const router = express.Router();
 
+// 회원가입 API
 router.post('/sign-up', async (req, res, next) => {
   try {
     const { userId, password, passwordCheck, name } = req.body;
@@ -58,6 +59,7 @@ router.post('/sign-up', async (req, res, next) => {
   }
 });
 
+// 로그인 API
 router.post('/sign-in', async (req, res, next) => {
   const { userId, password } = req.body;
 
@@ -80,14 +82,7 @@ router.post('/sign-in', async (req, res, next) => {
   return res.status(200).json({ message: '로그인 성공' });
 });
 
-//   characterId Int   @id @default(autoincrement()) @map("characterId")
-//   accountId   Int    @map("accountId")
-//   charactername   String   @unique @map("charactername")
-//   health Int      @map("health")
-//   power  Int      @map("power")
-//   money  Int      @map("money")
-//   profileImage  String  @map("profileImage")
-
+// 캐릭터 생성 API
 router.post('/character', authMiddlewate, async (req, res, next) => {
   const { charactername } = req.body;
   const account = req.user;
@@ -114,6 +109,29 @@ router.post('/character', authMiddlewate, async (req, res, next) => {
   });
 
   return res.status(201).json({ message: '캐릭터가 생성되었습니다.' });
+});
+
+router.delete('/character/:characterId', authMiddlewate, async (req, res, next) => {
+  const account = req.user;
+  const { characterId } = req.params;
+
+  const isExistCharacter = await prisma.character.findFirst({
+    where: { characterId: +characterId },
+  });
+
+  if (!isExistCharacter) {
+    return res.status(404).json({ message: '캐릭터 조회에 실패하였습니다.' });
+  }
+
+  if(account.accountId !== isExistCharacter.accountId){
+     return res.status(404).json({ message: '해당 캐릭터를 소유한 유저가 아닙니다.' });
+  }
+
+  await prisma.character.delete({
+     where:{characterId: +characterId}
+  });
+
+  return res.status(404).json({ message: `캐릭터 ${isExistCharacter.charactername}(을)를 삭제하였습니다.` });
 });
 
 export default router;
