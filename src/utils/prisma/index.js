@@ -8,7 +8,7 @@ export const prisma = new PrismaClient({
   errorFormat: 'pretty',
 }); // PrismaClient 인스턴스를 생성합니다.
 
-export const IsValidInput =  (str) =>{
+export const IsValidInput = (str) => {
   const regex = /^[a-z0-9]+$/;
   return regex.test(str);
 };
