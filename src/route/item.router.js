@@ -1,9 +1,5 @@
 import express from 'express';
-import authMiddlewate from '../middleware/auth.middlewate.js';
-import jwt from 'jsonwebtoken';
-import bcrpyt from 'bcrypt';
-import { prisma, IsValidInput } from '../utils/prisma/index.js';
-import { Prisma } from '@prisma/client';
+import { prisma } from '../utils/prisma/index.js';
 
 const router = express.Router();
 
@@ -33,7 +29,6 @@ router.post('/item', async (req, res, next) => {
       itemName: iteminfo.itemName,
       itemStat: iteminfo.itemStat,
       itemPrice: iteminfo.itemPrice,
-      quantity: iteminfo.quantity,
     },
   });
 

@@ -1,11 +1,17 @@
+const array = [
+  {
+    item: 1,
+    conunt: 2,
+  },
+  {
+    item: 2,
+    counnt: 3,
+  },
+];
 
-const str = "Abcd1efg";
 
-const IsValidInput =  (str) =>{
-  const regex = /^[a-z0-9]+$/;
-  return regex.test(str);
-};
+for(let i =0; i < array.length; i++){
+  console.log(array[i].conunt);
 
-console.log(IsValidInput(str));
+}
 
-console.log(str.length);

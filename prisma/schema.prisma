@@ -16,15 +16,14 @@ datasource db {
 
 model Items{
   itemId      Int  @id  @default(autoincrement()) @map("itemId")
-  inventoryId Int? @map("inventoryId")
   itemName    String   @map("name")
   itemStat    Json? @map("itemStat")
   itemPrice   Int @map("itemPrice")
-  quantity    Int @default(1) @map("quantity")
   createdAt   DateTime  @default(now()) @map("createdAt")
   updatedAt   DateTime @updatedAt @map("updatedAt")
 
-  inventory Inventory? @relation(fields: [inventoryId], references: [inventoryId], onDelete: SetNull)
+ 
+  inventories InventoryItem[]
   equippedItems EquippedItem[] 
 
   @@map("Items")
@@ -71,11 +70,27 @@ model Inventory{
 
   character Character @relation(fields: [characterId], references: [characterId],onDelete: Cascade)
 
-  item Items[]
+  items InventoryItem[]
 
   @@map("Inventory")
 
 }
+
+model InventoryItem{
+  inventoryItemId Int @id @default(autoincrement()) @map("inventoryItemId")
+  inventoryId     Int @map("inventoryId")
+  itemId          Int @map("itemId")
+  quantity        Int @default(1) @map("quantity")
+
+  inventory Inventory @relation(fields: [inventoryId], references: [inventoryId], onDelete: Cascade)
+  item      Items      @relation(fields: [itemId], references: [itemId], onDelete: Cascade)
+
+  @@unique([inventoryId, itemId]) // 같은 아이템이 중복으로 들어가는 걸 방지
+
+  @@map("InventoryItem")
+}
+
+
 
 model EquippedItem{
   equippedItemId Int  @id @default(autoincrement()) @map("equippedItemId")
@@ -86,6 +101,8 @@ model EquippedItem{
   character Character @relation(fields: [characterId], references: [characterId], onDelete: Cascade)
   item      Items     @relation(fields: [itemId], references: [itemId], onDelete: Cascade)
 
+  @@unique([characterId, slot])
+  @@map("EquippedItem")
 }
 
 enum EquippedSlot {

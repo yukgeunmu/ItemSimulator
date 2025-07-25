@@ -65,7 +65,7 @@ router.post('/sign-in', async (req, res, next) => {
 
   const user = await prisma.account.findFirst({ where: { userId } });
 
-  if (!user) return res.status(409).json({ message: '존재하지 않는 이메일 입니다.' });
+  if (!user) return res.status(409).json({ message: '존재하지 않는 계정 입니다.' });
 
   if (!(await bcrpyt.compare(password, user.password)))
     return res.status(401).json({ message: '비밀번호가 일치하지 않습니다.' });
