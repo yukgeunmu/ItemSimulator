@@ -29,6 +29,8 @@ router.post('/item', async (req, res, next) => {
       itemName: iteminfo.itemName,
       itemStat: iteminfo.itemStat,
       itemPrice: iteminfo.itemPrice,
+      itemType: iteminfo.itemType,
+      isEquip: iteminfo.isEquip,
     },
   });
 

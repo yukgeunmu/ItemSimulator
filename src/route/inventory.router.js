@@ -26,7 +26,7 @@ router.get('/inventory/:characterId', authMiddlewate, async (req, res, next) => 
   });
 
   if (!inventory) {
-    inventory = await tx.inventory.create({
+    inventory = await prisma.inventory.create({
       data: {
         characterId: +characterId,
       },

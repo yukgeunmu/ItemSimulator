@@ -1,12 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
-//  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -14,104 +7,92 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Items{
-  itemId      Int  @id  @default(autoincrement()) @map("itemId")
-  itemName    String   @map("name")
-  itemStat    Json? @map("itemStat")
-  itemPrice   Int @map("itemPrice")
-  createdAt   DateTime  @default(now()) @map("createdAt")
-  updatedAt   DateTime @updatedAt @map("updatedAt")
-
- 
-  inventories InventoryItem[]
-  equippedItems EquippedItem[] 
+model Items {
+  itemId        Int             @id @default(autoincrement()) @map("itemId")
+  itemName      String          @map("name")
+  itemStat      Json?           @map("itemStat")
+  itemPrice     Int             @map("itemPrice")
+  createdAt     DateTime        @default(now()) @map("createdAt")
+  updatedAt     DateTime        @updatedAt @map("updatedAt")
+  isEquip       Boolean         @default(true) @map("isEquip")
+  itemType      ItemType        @default(WEAPON) @map("itemType")
+  equippedItems EquippedItem[]
+  inventories   InventoryItem[]
 
   @@map("Items")
-
 }
 
-
-model Account{
-  accountId   Int @id @default(autoincrement()) @map("accountId")
-  userId       String @unique @map("userId")
-  password    String @map("password")
-  name        String @map("name")
-  createdAt   DateTime  @default(now()) @map("createdAt")
-  updatedAt   DateTime @updatedAt @map("updatedAt")
-
+model Account {
+  accountId Int         @id @default(autoincrement()) @map("accountId")
+  userId    String      @unique @map("userId")
+  password  String      @map("password")
+  name      String      @map("name")
+  createdAt DateTime    @default(now()) @map("createdAt")
+  updatedAt DateTime    @updatedAt @map("updatedAt")
   character Character[]
 
   @@map("Account")
 }
 
-model Character{
-  characterId Int   @id @default(autoincrement()) @map("characterId")
-  accountId   Int    @map("accountId")
-  charactername   String   @unique @map("charactername")
-  health Int      @map("health")
-  power  Int      @map("power")
-  money  Int      @map("money")
-  profileImage  String?  @map("profileImage")
-  createdAt     DateTime  @default(now()) @map("createdAt")
-  updatedAt     DateTime @updatedAt @map("updatedAt")
+model Character {
+  characterId   Int            @id @default(autoincrement()) @map("characterId")
+  accountId     Int            @map("accountId")
+  charactername String         @unique @map("charactername")
+  health        Int            @map("health")
+  power         Int            @map("power")
+  money         Int            @map("money")
+  profileImage  String?        @map("profileImage")
+  createdAt     DateTime       @default(now()) @map("createdAt")
+  updatedAt     DateTime       @updatedAt @map("updatedAt")
+  account       Account        @relation(fields: [accountId], references: [accountId], onDelete: Cascade)
+  equippedItem  EquippedItem[]
+  inventory     Inventory?
 
-  account Account @relation(fields: [accountId], references: [accountId], onDelete: Cascade)
-  inventory Inventory?
-
-  equippedItem EquippedItem[]
-
+  @@index([accountId], map: "Character_accountId_fkey")
   @@map("Character")
-
 }
 
-model Inventory{
-  inventoryId Int @id @default(autoincrement()) @map("inventoryId")
-  characterId Int @unique @map("characterId")
-
-  character Character @relation(fields: [characterId], references: [characterId],onDelete: Cascade)
-
-  items InventoryItem[]
+model Inventory {
+  inventoryId Int             @id @default(autoincrement()) @map("inventoryId")
+  characterId Int             @unique @map("characterId")
+  character   Character       @relation(fields: [characterId], references: [characterId], onDelete: Cascade)
+  items       InventoryItem[]
 
   @@map("Inventory")
-
 }
 
-model InventoryItem{
-  inventoryItemId Int @id @default(autoincrement()) @map("inventoryItemId")
-  inventoryId     Int @map("inventoryId")
-  itemId          Int @map("itemId")
-  quantity        Int @default(1) @map("quantity")
+model InventoryItem {
+  inventoryItemId Int       @id @default(autoincrement()) @map("inventoryItemId")
+  inventoryId     Int       @map("inventoryId")
+  itemId          Int       @map("itemId")
+  quantity        Int       @default(1) @map("quantity")
+  inventory       Inventory @relation(fields: [inventoryId], references: [inventoryId], onDelete: Cascade)
+  item            Items     @relation(fields: [itemId], references: [itemId], onDelete: Cascade)
 
-  inventory Inventory @relation(fields: [inventoryId], references: [inventoryId], onDelete: Cascade)
-  item      Items      @relation(fields: [itemId], references: [itemId], onDelete: Cascade)
-
-  @@unique([inventoryId, itemId]) // 같은 아이템이 중복으로 들어가는 걸 방지
-
+  @@unique([inventoryId, itemId])
+  @@index([itemId], map: "InventoryItem_itemId_fkey")
   @@map("InventoryItem")
 }
 
-
-
-model EquippedItem{
-  equippedItemId Int  @id @default(autoincrement()) @map("equippedItemId")
-  characterId    Int @map("characterId")
-  itemId         Int @map("itemId")
-  slot           EquippedSlot @map("slot")
-
-  character Character @relation(fields: [characterId], references: [characterId], onDelete: Cascade)
-  item      Items     @relation(fields: [itemId], references: [itemId], onDelete: Cascade)
+model EquippedItem {
+  equippedItemId Int       @id @default(autoincrement()) @map("equippedItemId")
+  characterId    Int       @map("characterId")
+  itemId         Int       @map("itemId")
+  slot           ItemType  @map("slot")
+  character      Character @relation(fields: [characterId], references: [characterId], onDelete: Cascade)
+  item           Items     @relation(fields: [itemId], references: [itemId], onDelete: Cascade)
 
   @@unique([characterId, slot])
+  @@index([itemId], map: "EquippedItem_itemId_fkey")
   @@map("EquippedItem")
 }
 
-enum EquippedSlot {
+enum ItemType {
   HEAD
   BODY
   WEAPON
   SHIELD
   RING
   NECKLACE
+  CONSUMABLE
 }
-
-
