@@ -66,6 +66,7 @@ model InventoryItem {
   inventoryId     Int       @map("inventoryId")
   itemId          Int       @map("itemId")
   quantity        Int       @default(1) @map("quantity")
+  
   inventory       Inventory @relation(fields: [inventoryId], references: [inventoryId], onDelete: Cascade)
   item            Items     @relation(fields: [itemId], references: [itemId], onDelete: Cascade)
 
