@@ -112,6 +112,31 @@ router.post('/equip/:characterId', authMiddlewate, async (req, res, next) => {
   return res.status(200).json({ message: '아이템이 장착 되었습니다.' });
 });
 
+router.get('/equip/:characterId', async (req, res, next) => {
+  const { characterId } = req.params;
+
+  const itemDatas = await prisma.equippedItem.findMany({
+    where: { characterId: +characterId },
+    select: {
+      item: {
+        select: {
+          itemId: true,
+          itemName: true,
+        },
+      },
+    },
+  });
+
+  const result = itemDatas.map((data) => {
+    return {
+      item_code: data.item.itemId,
+      item_Name: data.item.itemName,
+    };
+  });
+
+  return res.status(200).json(result);
+});
+
 router.delete('/equip', async (req, res, next) => {
   const { equippedItemId } = req.body;
 
