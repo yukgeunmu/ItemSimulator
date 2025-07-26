@@ -5,6 +5,8 @@ import { ItemType, Prisma } from '@prisma/client';
 
 const router = express.Router();
 
+
+// 아이템 장착
 router.post('/equip/:characterId', authMiddlewate, async (req, res, next) => {
   const { characterId } = req.params;
   const account = req.user;
@@ -112,6 +114,7 @@ router.post('/equip/:characterId', authMiddlewate, async (req, res, next) => {
   return res.status(200).json({ message: '아이템이 장착 되었습니다.' });
 });
 
+// 장착 아이템 조회
 router.get('/equip/:characterId', async (req, res, next) => {
   const { characterId } = req.params;
 
@@ -137,12 +140,86 @@ router.get('/equip/:characterId', async (req, res, next) => {
   return res.status(200).json(result);
 });
 
-router.delete('/equip', async (req, res, next) => {
-  const { equippedItemId } = req.body;
 
-  await prisma.equippedItem.delete({
-    where: { equippedItemId },
+// 아아팀 탈착 API
+router.delete('/equip/:characterId', authMiddlewate, async (req, res, next) => {
+  const { characterId } = req.params;
+  const account = req.user;
+  const { itemId } = req.body;
+
+  const isExistCharacter = await prisma.character.findFirst({
+    where: { characterId: +characterId },
   });
+
+  if (!isExistCharacter) {
+    return res.status(404).json({ message: '캐릭터 조회에 실패하였습니다.' });
+  }
+
+  if (account.accountId !== isExistCharacter.accountId) {
+    return res.status(409).json({ message: '해당 캐릭터를 소유한 유저가 아닙니다.' });
+  }
+
+  const isExistEquip = await prisma.equippedItem.findFirst({
+    where: { characterId: +characterId, itemId: itemId },
+  });
+
+  if (!isExistEquip) {
+    return res.status(409).json({ message: '장착 된 아이템이 아닙니다.' });
+  }
+
+  const inventory = await prisma.inventory.findFirst({
+    where: { characterId: +characterId },
+  });
+
+  const itemData = await prisma.items.findFirst({
+    where: { itemId },
+  });
+
+  await prisma.$transaction(async (tx) => {
+    await tx.equippedItem.delete({
+      where: { equippedItemId: isExistEquip.equippedItemId },
+    });
+
+    const character = await tx.character.findFirst({
+      where: { characterId: +characterId },
+    });
+
+    const { health: statHealth = 0, power: statPower = 0 } = itemData.itemStat;
+
+    const result = await tx.character.update({
+      where: { characterId: +characterId },
+      data: {
+        health: character.health - statHealth,
+        power: character.power - statPower,
+      },
+    });
+
+    //
+    const isExitItmeToInventory = await tx.inventoryItem.findFirst({
+      where: { inventoryId: inventory.inventoryId, itemId},
+    });
+
+    // 인벤토리에서 수량 늘리기
+    if (isExitItmeToInventory) {
+      await tx.inventoryItem.update({
+        where: { inventoryItemId: isExitItmeToInventory.inventoryItemId},
+        data: {
+          quantity: {
+            increment: 1,
+          },
+        },
+      });
+    } else {
+      await tx.inventoryItem.create({
+        data: {
+          inventoryId,
+          itemId,
+        },
+      });
+    }
+  });
+
+  return res.status(200).json({ message: '아이템이 해제되었습니다.' });
 });
 
 export default router;

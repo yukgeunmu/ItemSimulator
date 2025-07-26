@@ -36,24 +36,23 @@ router.get('/inventory/:characterId', authMiddlewate, async (req, res, next) => 
   const inventoryData = await prisma.inventoryItem.findMany({
     where: { inventoryId: inventory.inventoryId },
     select: {
-        item:{
-            select:{
-                itemId: true,
-                itemName: true,
-            }
+      item: {
+        select: {
+          itemId: true,
+          itemName: true,
         },
-        quantity: true,
-    }
+      },
+      quantity: true,
+    },
   });
 
-  const result = inventoryData.map(data => {
-    return{
-        item_code: data.item.itemId,
-        item_name: data.item.itemName,
-        count: data.quantity,
+  const result = inventoryData.map((data) => {
+    return {
+      item_code: data.item.itemId,
+      item_name: data.item.itemName,
+      count: data.quantity,
     };
   });
-
 
   return res.status(200).json(result);
 });
