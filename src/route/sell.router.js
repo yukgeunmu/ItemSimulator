@@ -45,15 +45,31 @@ router.delete('/sell/:characterId', authMiddlewate, async (req, res, next) => {
 
         // 아이템 목록에 판매할 아이템이 없으면 실패 출력
         if (!itemToInven) {
+
+          const nullitemName = await tx.items.findFirst({
+            where:{itemId: sellItem[i].itemId},
+            select:{
+                itemName: true,
+            }
+          });
+
           return res
             .status(404)
-            .json({ message: `인벤토리에 해당 아이템이 없습니다.(${itemToInven.item.itemName})` });
+            .json({ message: `인벤토리에 해당 아이템이 없습니다.(${nullitemName.itemName})` });
+        }
+
+        let count;
+
+        if(itemToInven){
+          count = itemToInven.quantity;
+        } else {
+          count = 0;
         }
 
         if (itemToInven.quantity < sellItem[i].count) {
           return res
             .status(404)
-            .json({ message: `판매 수량이 많습니다.(보유 수량:${itemToInven.quantity})` });
+            .json({ message: `판매 수량이 많습니다.(보유 수량:${count})` });
         }
 
         // 전체 계산에 더해주기
