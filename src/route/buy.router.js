@@ -2,25 +2,13 @@ import express from 'express';
 import { prisma } from '../utils/prisma/index.js';
 import authMiddlewate from '../middleware/auth.middlewate.js';
 import { Prisma } from '@prisma/client';
+import { characterValidationMiddleware } from '../middleware/character.middleware.js';
 
 const router = express.Router();
 
-router.patch('/buy/:characterId', authMiddlewate, async (req, res, next) => {
-  const { characterId } = req.params;
-  const account = req.user;
+router.patch('/buy/:characterId', authMiddlewate, characterValidationMiddleware, async (req, res, next) => {
   const boughtItem = req.body;
-
-  const isExistCharacter = await prisma.character.findFirst({
-    where: { characterId: +characterId },
-  });
-
-  if (!isExistCharacter) {
-    return res.status(404).json({ message: '캐릭터 조회에 실패하였습니다.' });
-  }
-
-  if (account.accountId !== isExistCharacter.accountId) {
-    return res.status(409).json({ message: '해당 캐릭터를 소유한 유저가 아닙니다.' });
-  }
+  const character = req.character;
 
   await prisma.$transaction(
     async (tx) => {
@@ -29,14 +17,14 @@ router.patch('/buy/:characterId', authMiddlewate, async (req, res, next) => {
 
       // 캐릭터가 가진 인벤토리 선택
       selectedInventory = await tx.inventory.findFirst({
-        where: { characterId: +characterId },
+        where: { characterId: character.characterId },
       });
 
       // 해당 캐릭터에 인벤토리가 없으면 새로 생성
       if (!selectedInventory) {
         selectedInventory = await tx.inventory.create({
           data: {
-            characterId: +characterId,
+            characterId: character.characterId,
           },
         });
       }
@@ -82,15 +70,15 @@ router.patch('/buy/:characterId', authMiddlewate, async (req, res, next) => {
         }
       }
 
-      if (isExistCharacter.money < totalPrice) {
+      if (req.character.money < totalPrice) {
         return res
           .status(400)
-          .json({ message: `돈이 부족해요.(${totalPrice - isExistCharacter.money})` });
+          .json({ message: `돈이 부족해요.(${totalPrice - character.money})` });
       } else {
-        const resultPrice = isExistCharacter.money - totalPrice;
+        const resultPrice = character.money - totalPrice;
 
         await tx.character.update({
-          where: { characterId: +characterId },
+          where: { characterId: character.characterId },
           data: {
             money: resultPrice,
           },

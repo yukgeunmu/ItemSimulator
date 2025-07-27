@@ -93,19 +93,28 @@ router.post('/character', authMiddlewate, async (req, res, next) => {
 
   if (characters) return res.status(404).json({ message: '존재하는 캐릭터 닉네임 입니다.' });
 
-  await prisma.character.create({
-    data: {
-      charactername,
-      health: 500,
-      power: 100,
-      money: 10000,
-      profileImage: '',
-      account: {
-        connect: {
-          accountId: account.accountId,
+  await prisma.$transaction(async (tx) => {
+    const character = await tx.character.create({
+      data: {
+        charactername,
+        health: 500,
+        power: 100,
+        money: 10000,
+        profileImage: '',
+        account: {
+          connect: {
+            accountId: account.accountId,
+          },
         },
       },
-    },
+    });
+
+    await tx.inventory.create({
+      data:{
+        characterId: character.characterId,
+      }
+    });
+
   });
 
   return res.status(201).json({ message: '캐릭터가 생성되었습니다.' });
@@ -175,6 +184,5 @@ router.get('/character/:characterId', authMiddlewate, async (req, res, next) => 
     return res.status(200).json({ data: data });
   }
 });
-
 
 export default router;
