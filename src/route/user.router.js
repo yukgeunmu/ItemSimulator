@@ -1,5 +1,5 @@
 import express from 'express';
-import authMiddlewate from '../middleware/auth.middlewate.js';
+import authMiddlewate from '../middleware/auth.middleware.js';
 import jwt from 'jsonwebtoken';
 import bcrpyt from 'bcrypt';
 import { prisma, IsValidInput } from '../utils/prisma/index.js';
