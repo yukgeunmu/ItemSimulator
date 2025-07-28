@@ -14,8 +14,4 @@ export const IsValidInput = (str) => {
 };
 
 
-export const ErrorFormat = (message, status) =>{
-  const error = new Error(message);
-  error.status = status;
-  throw error;
-};
+

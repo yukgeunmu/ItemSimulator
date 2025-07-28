@@ -1,7 +1,8 @@
 import express from 'express';
 import authMiddleware from '../middleware/auth.middleware.js';
 import characterValidationMiddleware from '../middleware/character.middleware.js';
-import { prisma, ErrorFormat } from '../utils/prisma/index.js';
+import { prisma } from '../utils/prisma/index.js';
+import { HttpError } from '../utils/prisma/HttpError.js';
 
 const router = express.Router();
 
@@ -14,7 +15,7 @@ router.post('/character', authMiddleware, async (req, res, next) => {
     where: { charactername },
   });
 
-  if (characters) ErrorFormat('존재하는 캐릭터 닉네임 입니다.', 404);
+  if (characters) throw new HttpError('존재하는 캐릭터 닉네임 입니다.', 404);
 
   await prisma.$transaction(async (tx) => {
     const character = await tx.character.create({
@@ -43,17 +44,22 @@ router.post('/character', authMiddleware, async (req, res, next) => {
 });
 
 // 캐릭터 삭제 API
-router.delete('/character/:characterId', authMiddleware, characterValidationMiddleware, async (req, res, next) => {
-  const character = req.character;
+router.delete(
+  '/character/:characterId',
+  authMiddleware,
+  characterValidationMiddleware,
+  async (req, res, next) => {
+    const character = req.character;
 
-  await prisma.character.delete({
-    where: { characterId: character.characterId },
-  });
+    await prisma.character.delete({
+      where: { characterId: character.characterId },
+    });
 
-  return res
-    .status(404)
-    .json({ message: `캐릭터 ${character.charactername}(을)를 삭제하였습니다.` });
-});
+    return res
+      .status(404)
+      .json({ message: `캐릭터 ${character.charactername}(을)를 삭제하였습니다.` });
+  },
+);
 
 //캐릭터 상세 조회 API
 router.get('/character/:characterId', authMiddleware, async (req, res, next) => {
@@ -65,7 +71,7 @@ router.get('/character/:characterId', authMiddleware, async (req, res, next) => 
     where: { characterId: +characterId },
   });
 
-  if (!isExistCharacter) ErrorFormat('캐릭터 조회에 실패하였습니다.', 404);
+  if (!isExistCharacter) throw new HttpError('캐릭터 조회에 실패하였습니다.', 404);
 
   if (account.accountId !== isExistCharacter.accountId) {
     data = await prisma.character.findFirst({

@@ -1,15 +1,19 @@
 import jwt from 'jsonwebtoken';
-import { prisma, ErrorFormat } from '../utils/prisma/index.js';
+import { prisma } from '../utils/prisma/index.js';
+import dotenv from 'dotenv';
+import { HttpError } from '../utils/prisma/HttpError.js';
+
+dotenv.config();
 
 export default async function (req, res, next) {
   try {
     const { accessToken } = req.cookies;
 
-    if (!accessToken) ErrorFormat('토큰이 존재하지 않습니다.', 409);
+    if (!accessToken) throw new HttpError('토큰이 존재하지 않습니다.', 409);
 
     const [tokenType, token] = accessToken.split(' ');
 
-    if (tokenType !== 'Bearer') ErrorFormat('토큰 타입이 일치하지 않습니다.', 404);
+    if (tokenType !== 'Bearer') throw new HttpError('토큰 타입이 일치하지 않습니다.', 404);
 
     const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET_KEY);
     const userId = decodedToken.userId;
@@ -20,7 +24,7 @@ export default async function (req, res, next) {
 
     if (!user) {
       res.clearCookie('authorization');
-      ErrorFormat('토큰 사용자가 존재하지 않습니다.', 404);
+      throw new HttpError('토큰 사용자가 존재하지 않습니다.', 404);
     }
 
     req.user = user;
@@ -31,11 +35,11 @@ export default async function (req, res, next) {
     // 토큰이 만료되었거나, 조작되었을 때, 에러 메시지를 다르게 출력합니다.
     switch (error.name) {
       case 'TokenExpiredError':
-        return res.status(401).json({ message: '토큰이 만료되었습니다.' });
+        return  next(new HttpError('토큰이 만료되었습니다.', 401)); 
       case 'JsonWebTokenError':
-        return res.status(401).json({ message: '토큰이 조작되었습니다.' });
+                return  next(new HttpError( '토큰이 조작되었습니다.', 401)); 
       default:
-        return res.status(401).json({ message: error.message ?? '비정상적인 요청입니다.' });
+        return next(error);
     }
   }
 }

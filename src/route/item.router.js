@@ -1,5 +1,6 @@
 import express from 'express';
-import { prisma, ErrorFormat } from '../utils/prisma/index.js';
+import { prisma } from '../utils/prisma/index.js';
+import { HttpError } from '../utils/prisma/HttpError.js';
 
 const router = express.Router();
 
@@ -12,7 +13,7 @@ router.post('/item', async (req, res, next) => {
       where: { itemName: iteminfo.itemName },
     });
 
-    if (isExistItem) ErrorFormat('이미 존재하는 아이템 입니다.', 409);
+    if (isExistItem) throw new HttpError('이미 존재하는 아이템 입니다.', 409);
 
     await prisma.items.create({
       data: {
@@ -40,9 +41,9 @@ router.patch('/item/:itemId', async (req, res, next) => {
       where: { itemId: +itemId },
     });
 
-    if (!getItem) ErrorFormat('아이템 조회에 실패하였습니다.', 404);
+    if (!getItem) throw new HttpError('아이템 조회에 실패하였습니다.', 404);
 
-    if (itemInfo.itemPrice) ErrorFormat('가격은 수정 할 수 없습니다.', 405);
+    if (itemInfo.itemPrice) throw new HttpError('가격은 수정 할 수 없습니다.', 405);
 
     await prisma.items.update({
       data: {
@@ -69,7 +70,7 @@ router.get('/item', async (req, res, next) => {
       },
     });
 
-    if (!itmeData) ErrorFormat('조회할 아이템이 없습니다.', 404);
+    if (!itmeData) throw new HttpError('조회할 아이템이 없습니다.', 404);
 
     return res.status(200).json({ data: itmeData });
   } catch (err) {
@@ -92,7 +93,7 @@ router.get('/item/:itemId', async (req, res, next) => {
       },
     });
 
-    if (!itemData) ErrorFormat('조회하는데 실패 하였습니다.', 404)
+    if (!itemData) throw new HttpError('조회하는데 실패 하였습니다.', 404);
 
     return res.status(200).json({ data: itemData });
   } catch (err) {

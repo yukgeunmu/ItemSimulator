@@ -1,6 +1,7 @@
 import errorMiddleware from '../middleware/error.middleware.js';
-import { prisma, ErrorFormat } from '../utils/prisma/index.js';
+import { prisma } from '../utils/prisma/index.js';
 import { Prisma } from '@prisma/client';
+import { HttpError } from '../utils/prisma/HttpError.js';
 
 class ItemService {
   // 아이템 구매
@@ -16,7 +17,7 @@ class ItemService {
           });
 
           // 아이템 목록에 구매할 아이템이 없으면 실패 출력
-          if (!item) ErrorFormat('아이템 조회에 실패 하였습니다.', 404);
+          if (!item) throw new HttpError('아이템 조회에 실패 하였습니다.', 404);
 
           // 있으면 전체 계산에 더해주기
           totalPrice += item.itemPrice * boughtItem[i].count;
@@ -49,7 +50,7 @@ class ItemService {
         }
 
         if (character.money < totalPrice) {
-          ErrorFormat(`돈이 부족해요.(${totalPrice - character.money})`, 400);
+          throw new HttpError(`돈이 부족해요.(${totalPrice - character.money})`, 400);
         } else {
           const resultPrice = character.money - totalPrice;
 
@@ -102,13 +103,13 @@ class ItemService {
               },
             });
 
-            ErrorFormat(`인벤토리에 해당 아이템이 없습니다.(${nullitemName.itemName})`, 404);
+            throw new HttpError(`인벤토리에 해당 아이템이 없습니다.(${nullitemName.itemName})`, 404);
           }
 
           // 판매 수량이 보유 수량 보다 많으면 보유 수량 보여주기
           if (itemToInven.quantity < sellItem[i].count) {
             const count = itemToInven.quantity;
-            ErrorFormat(`판매 수량이 많습니다.(보유 수량:${count})`, 404);
+            throw new HttpError(`판매 수량이 많습니다.(보유 수량:${count})`, 404);
           }
 
           // 전체 판매 값에 추가
@@ -155,7 +156,7 @@ class ItemService {
       },
     });
 
-    if (!inventoryItem) ErrorFormat('해당 아이템이 인벤토리에 없습니다.', 404);
+    if (!inventoryItem) throw new HttpError('해당 아이템이 인벤토리에 없습니다.', 404);
 
     const isExistEquip = await prisma.equippedItem.findFirst({
       where: {
@@ -163,7 +164,7 @@ class ItemService {
       },
     });
 
-    if (isExistEquip) ErrorFormat(`해당 ${isExistEquip.slot} 슬롯은 장착 중 입니다.`, 409);
+    if (isExistEquip) throw new HttpError(`해당 ${isExistEquip.slot} 슬롯은 장착 중 입니다.`, 409);
 
     // 아이템 장착 트랜잭션
     await prisma.$transaction(async (tx) => {
@@ -233,8 +234,7 @@ class ItemService {
       },
     });
 
-    if (!euippedItem) ErrorFormat('장착 중인 아이템이 아닙니다.', 409);
-    
+    if (!euippedItem) throw new HttpError('장착 중인 아이템이 아닙니다.', 409);
 
     await prisma.$transaction(
       async (tx) => {
