@@ -8,7 +8,6 @@ class ItemService {
     await prisma.$transaction(
       async (tx) => {
         let totalPrice = 0;
-        let selectedInventory;
 
         for (let i = 0; i < boughtItem.length; i++) {
           // 구매 할 아이템을 아이템 목록에서 찾음
@@ -36,7 +35,7 @@ class ItemService {
           if (!isExist) {
             await tx.inventoryItem.create({
               data: {
-                inventoryId: selectedInventory.inventoryId,
+                inventoryId: character.inventory.inventoryId,
                 itemId: item.itemId,
                 quantity: boughtItem[i].count,
               },
