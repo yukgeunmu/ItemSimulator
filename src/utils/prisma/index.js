@@ -12,3 +12,10 @@ export const IsValidInput = (str) => {
   const regex = /^[a-z0-9]+$/;
   return regex.test(str);
 };
+
+
+export const ErrorFormat = (message, status) =>{
+  const error = new Error(message);
+  error.status = status;
+  throw error;
+};

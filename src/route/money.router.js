@@ -1,7 +1,7 @@
 import express from 'express';
 import { prisma } from '../utils/prisma/index.js';
 import authMiddlewate from '../middleware/auth.middleware.js';
-import { characterValidationMiddleware } from '../middleware/character.middleware.js';
+import characterValidationMiddleware  from '../middleware/character.middleware.js';
 
 const router = express.Router();
 
@@ -10,19 +10,12 @@ router.patch('/money/:characterId', authMiddlewate,characterValidationMiddleware
 
   const character = req.character;
 
-  const curretMoney = await prisma.character.findFirst({
-    where: { characterId: character.characterId },
-    select: {
-      money: true,
-    },
-  });
-
-  const addMoney = curretMoney.money + 100;
-
   const result = await prisma.character.update({
     where: { characterId: character.characterId },
     data: {
-      money: addMoney,
+      money:{
+        increment: 100,
+      }
     },
   });
 

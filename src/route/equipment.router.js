@@ -1,7 +1,7 @@
 import express from 'express';
 import { prisma } from '../utils/prisma/index.js';
 import authMiddlewate from '../middleware/auth.middleware.js';
-import { characterValidationMiddleware } from '../middleware/character.middleware.js';
+import characterValidationMiddleware from '../middleware/character.middleware.js';
 import ItemService from '../services/item.service.js';
 
 const router = express.Router();

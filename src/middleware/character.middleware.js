@@ -1,12 +1,12 @@
-import { prisma } from '../utils/prisma/index.js';
+import { prisma, ErrorFormat } from '../utils/prisma/index.js';
 
-export const characterValidationMiddleware = async (req, res, next) => {
+export default async function (req, res, next) {
   const { characterId } = req.params;
   const account = req.user;
 
   try {
     if (!characterId) {
-      return res.status(400).json({ message: 'characterId가 필요합니다.' });
+      ErrorFormat('characterId가 필요합니다.', 400);
     }
 
     const character = await prisma.character.findFirst({
@@ -17,11 +17,11 @@ export const characterValidationMiddleware = async (req, res, next) => {
     });
 
     if (!character) {
-      return res.status(404).json({ message: '캐릭터 조회에 실패하였습니다.' });
+      ErrorFormat('캐릭터 조회에 실패하였습니다.', 404);
     }
 
     if (account.accountId !== character.accountId) {
-      return res.status(403).json({ message: '해당 캐릭터에 대한 권한이 없습니다.' });
+      ErrorFormat('해당 캐릭터에 대한 권한이 없습니다.', 403);
     }
 
     // 검증을 통과하면 character 정보를 req 객체에 담아 다음 미들웨어로 전달
@@ -30,4 +30,4 @@ export const characterValidationMiddleware = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-};
+}
