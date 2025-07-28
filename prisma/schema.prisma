@@ -29,7 +29,11 @@ model Account {
   name      String      @map("name")
   createdAt DateTime    @default(now()) @map("createdAt")
   updatedAt DateTime    @updatedAt @map("updatedAt")
+  refreshToken String? @map("refreshToken")
+
   character Character[]
+
+
 
   @@map("Account")
 }

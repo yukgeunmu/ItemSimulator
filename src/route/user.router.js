@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import bcrpyt from 'bcrypt';
 import { prisma, IsValidInput, ErrorFormat } from '../utils/prisma/index.js';
 import { Prisma } from '@prisma/client';
+import dotenv from 'dotenv';
 
 const router = express.Router();
 
@@ -34,7 +35,7 @@ router.post('/sign-up', async (req, res, next) => {
 
     const hashedPassword = await bcrpyt.hash(password, 10);
 
-    const [account] = await prisma.$transaction(
+    await prisma.$transaction(
       async (tx) => {
         const account = await tx.account.create({
           data: {
@@ -68,16 +69,60 @@ router.post('/sign-in', async (req, res, next) => {
   if (!(await bcrpyt.compare(password, user.password)))
     ErrorFormat('비밀번호가 일치하지 않습니다.', 401);
 
-  const token = jwt.sign(
+  const accessToken = jwt.sign(
     {
       userId: user.userId,
     },
-    'custom-secret-key',
+    process.env.ACCESS_TOKEN_SECRET_KEY,
+    { expiresIn: '10s' },
   );
 
-  res.cookie('authorization', `Bearer ${token}`);
+  const refreshToken = jwt.sign(
+    {
+      userId: user.userId,
+    },
+    process.env.REFRESH_TOKEN_SECRET_KEY,
+    { expiresIn: '7d' },
+  );
+
+  await prisma.account.update({
+    where: { userId },
+    data: {
+      refreshToken,
+    },
+  });
+
+  res.cookie('accessToken', `Bearer ${accessToken}`);
+  res.cookie('refreshToken', `Bearer ${refreshToken}`);
 
   return res.status(200).json({ message: '로그인 성공' });
+});
+
+// 토큰 재발급
+router.get('/refresh', async (req, res, next) => {
+  const { refreshToken } = req.cookies;
+
+  const [tokenType, token] = refreshToken.split(' ');
+
+  if (tokenType !== 'Bearer') throw Error('토큰 타입이 일치하지 않습니다.');
+
+  const decodedToken = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET_KEY);
+  const userId = decodedToken.userId;
+
+  const user = await prisma.account.findFirst({
+    where: { userId },
+  });
+
+  if (!user) ErrorFormat('토큰 사용자가 없습니다.', 404);
+
+  const newAccessToken = jwt.sign({ userId: userId }, process.env.ACCESS_TOKEN_SECRET_KEY, {
+    expiresIn: '10s',
+  });
+
+  res.cookie('accessToken', `Bearer ${newAccessToken}`);
+
+  return res.json({message:'Access 토큰을 새롭게 발급했습니다.'});
+
 });
 
 export default router;
