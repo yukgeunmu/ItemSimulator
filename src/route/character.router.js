@@ -56,7 +56,7 @@ router.delete(
     });
 
     return res
-      .status(404)
+      .status(200)
       .json({ message: `캐릭터 ${character.charactername}(을)를 삭제하였습니다.` });
   },
 );

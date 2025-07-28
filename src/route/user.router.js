@@ -1,6 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import userService from '../services/user.service.js';
+import jwt from 'jsonwebtoken';
 
 dotenv.config();
 
@@ -35,7 +36,10 @@ router.post('/sign-in', async (req, res, next) => {
 router.get('/refresh', async (req, res, next) => {
   const { refreshToken } = req.cookies;
 
-  const newAccessToken = userService.refresh(refreshToken);
+  const { userId } = await userService.refresh(refreshToken);
+  const newAccessToken = jwt.sign({ userId }, process.env.ACCESS_TOKEN_SECRET_KEY, {
+    expiresIn: '1m',
+  });
 
   res.cookie('accessToken', `Bearer ${newAccessToken}`);
 

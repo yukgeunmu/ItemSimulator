@@ -103,7 +103,10 @@ class ItemService {
               },
             });
 
-            throw new HttpError(`인벤토리에 해당 아이템이 없습니다.(${nullitemName.itemName})`, 404);
+            throw new HttpError(
+              `인벤토리에 해당 아이템이 없습니다.(${nullitemName.itemName})`,
+              404,
+            );
           }
 
           // 판매 수량이 보유 수량 보다 많으면 보유 수량 보여주기
@@ -160,11 +163,25 @@ class ItemService {
 
     const isExistEquip = await prisma.equippedItem.findFirst({
       where: {
-        OR: [{ itemId }, { slot: inventoryItem.item.itemType }],
+        characterId: character.characterId,
+        slot: inventoryItem.item.itemType,
       },
     });
 
-    if (isExistEquip) throw new HttpError(`해당 ${isExistEquip.slot} 슬롯은 장착 중 입니다.`, 409);
+    const isSameItem = await prisma.equippedItem.findFirst({
+      where: {
+        characterId: character.characterId,
+        itemId: itemId,
+      },
+    });
+
+    if (isSameItem) {
+      throw new HttpError('이미 해당 아이템이 장착되어 있습니다.', 409);
+    }
+
+    if (isExistEquip) {
+      throw new HttpError(`해당 ${isExistEquip.slot} 슬롯은 장착 중입니다.`, 409);
+    }
 
     // 아이템 장착 트랜잭션
     await prisma.$transaction(async (tx) => {

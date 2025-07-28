@@ -56,7 +56,7 @@ class UserService {
         userId: user.userId,
       },
       process.env.ACCESS_TOKEN_SECRET_KEY,
-      { expiresIn: '10s' },
+      { expiresIn: '1m' },
     );
 
     const refreshToken = jwt.sign(
@@ -91,11 +91,7 @@ class UserService {
 
     if (!user) throw new HttpError('토큰 사용자가 없습니다.', 404);
 
-    const newAccessToken = jwt.sign({ userId: userId }, process.env.ACCESS_TOKEN_SECRET_KEY, {
-      expiresIn: '10s',
-    });
-
-    return { newAccessToken };
+    return { userId };
   };
 }
 

@@ -35,9 +35,9 @@ export default async function (req, res, next) {
     // 토큰이 만료되었거나, 조작되었을 때, 에러 메시지를 다르게 출력합니다.
     switch (error.name) {
       case 'TokenExpiredError':
-        return  next(new HttpError('토큰이 만료되었습니다.', 401)); 
+        return next(new HttpError('토큰이 만료되었습니다.', 401));
       case 'JsonWebTokenError':
-                return  next(new HttpError( '토큰이 조작되었습니다.', 401)); 
+        return next(new HttpError('토큰이 조작되었습니다.', 401));
       default:
         return next(error);
     }
