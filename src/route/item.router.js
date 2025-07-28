@@ -71,6 +71,7 @@ router.get('/item', async (req, res, next) => {
       itemId: true,
       itemName: true,
       itemPrice: true,
+      itemType: true,
     },
   });
 
