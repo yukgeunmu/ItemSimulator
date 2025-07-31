@@ -1,4 +1,4 @@
-import bcrpyt from 'bcrypt';
+import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { prisma, IsValidInput } from '../utils/prisma/index.js';
 import dotenv from 'dotenv';
@@ -6,7 +6,7 @@ import { HttpError } from '../utils/prisma/HttpError.js';
 
 dotenv.config();
 
-class UserService {
+export class UserService {
   signUp = async (userInfo) => {
     if (!userInfo.userId || !userInfo.password || !userInfo.passwordCheck || !userInfo.name) {
       throw new HttpError('모든 필드를 입력해주세요.', 400);
@@ -32,7 +32,7 @@ class UserService {
       throw new HttpError('이미 존재하는 아이디 입니다.', 409);
     }
 
-    const hashedPassword = await bcrpyt.hash(userInfo.password, 10);
+    const hashedPassword = await bcrypt.hash(userInfo.password, 10);
 
     await prisma.account.create({
       data: {
@@ -48,7 +48,7 @@ class UserService {
 
     if (!user) throw new HttpError('존재하지 않는 계정 입니다.', 409);
 
-    if (!(await bcrpyt.compare(password, user.password)))
+    if (!(await bcrypt.compare(password, user.password)))
       throw new HttpError('비밀번호가 일치하지 않습니다.', 401);
 
     const accessToken = jwt.sign(
