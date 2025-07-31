@@ -8,6 +8,9 @@ import EquipmentRouter from './route/equipment.router.js';
 import MoneyRouter from './route/money.router.js';
 import ErrorMiddleware from './middleware/error.middleware.js';
 import CharacterRouter from './route/character.router.js';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const app = express();
 const PORT = 3018;
