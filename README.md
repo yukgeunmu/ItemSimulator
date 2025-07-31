@@ -81,7 +81,60 @@
 
 ## 📄 API 명세
 
-(API 명세는 추후에 추가될 예정입니다.)
+## 📄 API 명세서
+
+### 🧑‍🤝‍🧑 User
+
+| Method | Endpoint         | Description      |
+| ------ | ---------------- | ---------------- |
+| POST   | /sign-up         | 회원가입         |
+| POST   | /sign-in         | 로그인           |
+| GET    | /refresh         | 토큰 재발급      |
+
+### 🧑 Character
+
+| Method | Endpoint                  | Description      |
+| ------ | ------------------------- | ---------------- |
+| POST   | /character                | 캐릭터 생성      |
+| DELETE | /character/:characterId   | 캐릭터 삭제      |
+| GET    | /character/:characterId   | 캐릭터 상세 조회 |
+
+### 📦 Item
+
+| Method | Endpoint         | Description      |
+| ------ | ---------------- | ---------------- |
+| POST   | /item            | 아이템 생성      |
+| PATCH  | /item/:itemId    | 아이템 수정      |
+| GET    | /item            | 아이템 목록 조회 |
+| GET    | /item/:itemId    | 아이템 상세 조회 |
+
+### 💰 Money
+
+| Method | Endpoint               | Description |
+| ------ | ---------------------- | ----------- |
+| PATCH  | /money/:characterId    | 재화 획득   |
+
+### 🔁 Trade
+
+| Method | Endpoint            | Description |
+| ------ | ------------------- | ----------- |
+| PATCH  | /buy/:characterId   | 아이템 구매 |
+| DELETE | /sell/:characterId  | 아이템 판매 |
+
+### 🎒 Inventory
+
+| Method | Endpoint                 | Description    |
+| ------ | ------------------------ | -------------- |
+| GET    | /inventory/:characterId  | 인벤토리 조회  |
+
+### ⚔️ Equipment
+
+| Method | Endpoint               | Description    |
+| ------ | ---------------------- | -------------- |
+| POST   | /equip/:characterId    | 아이템 장착    |
+| GET    | /equip/:characterId    | 장착 아이템 조회 |
+| DELETE | /equip/:characterId    | 아이템 탈착    |
+
 
 ## 👨‍💻 작성자
 

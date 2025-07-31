@@ -4,6 +4,9 @@
   "main": "index.js",
   "author": "yukgeunmu <36117247+yukgeunmu@users.noreply.github.com>",
   "license": "MIT",
+    "scripts": {
+    "dev": "nodemon src/app.js"
+  },
   "type": "module",
   "dependencies": {
     "@prisma/client": "^6.12.0",
